@@ -1,5 +1,10 @@
 # GoREST Translatable Plugin
 
+
+[![CI](https://github.com/nicolasbonnici/gorest-translatable/actions/workflows/ci.yml/badge.svg)](https://github.com/nicolasbonnici/gorest-translatable/actions/workflows/ci.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/nicolasbonnici/gorest-translatable)](https://goreportcard.com/report/github.com/nicolasbonnici/gorest-translatable)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 A production-ready plugin for GoREST framework that provides multi-language content support through a polymorphic `translatable` table.
 
 ## Features
