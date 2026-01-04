@@ -1,68 +1,95 @@
 package translatable
 
 import (
-	"database/sql"
-	"fmt"
-	"net/http"
+	"github.com/gofiber/fiber/v2"
+	"github.com/nicolasbonnici/gorest-translatable/migrations"
+	"github.com/nicolasbonnici/gorest/database"
+	"github.com/nicolasbonnici/gorest/plugin"
 )
 
-type Plugin struct {
-	config  *Config
-	handler *Handler
-	repo    Repository
+type TranslatablePlugin struct {
+	config Config
+	db     database.Database
 }
 
-func NewPlugin(config *Config) (*Plugin, error) {
-	if err := config.Validate(); err != nil {
-		return nil, fmt.Errorf("invalid config: %w", err)
-	}
-
-	return &Plugin{
-		config: config,
-	}, nil
+func NewPlugin() plugin.Plugin {
+	return &TranslatablePlugin{}
 }
 
-func (p *Plugin) Name() string {
+func (p *TranslatablePlugin) Name() string {
 	return "translatable"
 }
 
-func (p *Plugin) Version() string {
-	return "1.0.0"
+func (p *TranslatablePlugin) Initialize(config map[string]interface{}) error {
+	p.config = DefaultConfig()
+
+	if db, ok := config["database"].(database.Database); ok {
+		p.db = db
+		p.config.Database = db
+	}
+
+	if allowedTypes, ok := config["allowed_types"].([]interface{}); ok {
+		types := make([]string, 0, len(allowedTypes))
+		for _, t := range allowedTypes {
+			if str, ok := t.(string); ok {
+				types = append(types, str)
+			}
+		}
+		if len(types) > 0 {
+			p.config.AllowedTypes = types
+		}
+	}
+
+	if supportedLocales, ok := config["supported_locales"].([]interface{}); ok {
+		locales := make([]string, 0, len(supportedLocales))
+		for _, l := range supportedLocales {
+			if str, ok := l.(string); ok {
+				locales = append(locales, str)
+			}
+		}
+		if len(locales) > 0 {
+			p.config.SupportedLocales = locales
+		}
+	}
+
+	if defaultLocale, ok := config["default_locale"].(string); ok {
+		p.config.DefaultLocale = defaultLocale
+	}
+
+	if paginationLimit, ok := config["pagination_limit"].(int); ok {
+		p.config.PaginationLimit = paginationLimit
+	}
+
+	if maxPaginationLimit, ok := config["max_pagination_limit"].(int); ok {
+		p.config.MaxPaginationLimit = maxPaginationLimit
+	}
+
+	if maxContentLength, ok := config["max_content_length"].(int); ok {
+		p.config.MaxContentLength = maxContentLength
+	}
+
+	return p.config.Validate()
 }
 
-func (p *Plugin) Initialize(db *sql.DB) error {
-	p.repo = NewRepository(db)
-	p.handler = NewHandler(p.repo, p.config)
+func (p *TranslatablePlugin) Handler() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		return c.Next()
+	}
+}
+
+func (p *TranslatablePlugin) SetupEndpoints(app *fiber.App) error {
+	if p.db == nil {
+		return nil
+	}
+
+	RegisterRoutes(app, p.db, &p.config)
 	return nil
 }
 
-func (p *Plugin) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("POST /api/translatable", p.handler.Create)
-	mux.HandleFunc("GET /api/translatable/{id}", p.handler.GetByID)
-	mux.HandleFunc("GET /api/translatable", p.handler.Query)
-	mux.HandleFunc("PUT /api/translatable/{id}", p.handler.Update)
-	mux.HandleFunc("DELETE /api/translatable/{id}", p.handler.Delete)
+func (p *TranslatablePlugin) MigrationSource() interface{} {
+	return migrations.GetMigrations()
 }
 
-func (p *Plugin) Shutdown() error {
-	return nil
-}
-
-func (p *Plugin) Config() *Config {
-	return p.config
-}
-
-type Router interface {
-	POST(path string, handler http.HandlerFunc)
-	GET(path string, handler http.HandlerFunc)
-	PUT(path string, handler http.HandlerFunc)
-	DELETE(path string, handler http.HandlerFunc)
-}
-
-func (p *Plugin) RegisterRoutesWithCustomRouter(router Router) {
-	router.POST("/api/translatable", p.handler.Create)
-	router.GET("/api/translatable/:id", p.handler.GetByID)
-	router.GET("/api/translatable", p.handler.Query)
-	router.PUT("/api/translatable/:id", p.handler.Update)
-	router.DELETE("/api/translatable/:id", p.handler.Delete)
+func (p *TranslatablePlugin) MigrationDependencies() []string {
+	return []string{"auth"}
 }
