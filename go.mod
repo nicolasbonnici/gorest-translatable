@@ -1,4 +1,4 @@
-module github.com/nicolas/gorest-translatable
+module github.com/nicolasbonnici/gorest-translatable
 
 go 1.25.1
 
