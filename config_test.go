@@ -7,69 +7,81 @@ import (
 func TestConfig_Validate(t *testing.T) {
 	tests := []struct {
 		name    string
-		config  *Config
+		config  Config
 		wantErr bool
 		errMsg  string
 	}{
 		{
 			name: "valid config",
-			config: &Config{
-				AllowedTables:    []string{"posts", "articles"},
-				MaxContentLength: 10240,
+			config: Config{
+				AllowedTypes:       []string{"posts", "articles"},
+				SupportedLocales:   []string{"en", "fr"},
+				DefaultLocale:      "en",
+				MaxContentLength:   10240,
+				PaginationLimit:    20,
+				MaxPaginationLimit: 100,
 			},
 			wantErr: false,
 		},
 		{
-			name: "empty allowed tables",
-			config: &Config{
-				AllowedTables:    []string{},
-				MaxContentLength: 10240,
+			name: "empty allowed types",
+			config: Config{
+				AllowedTypes:     []string{},
+				SupportedLocales: []string{"en"},
+				DefaultLocale:    "en",
 			},
 			wantErr: true,
-			errMsg:  "allowed_tables cannot be empty",
+			errMsg:  "allowed_types cannot be empty",
 		},
 		{
-			name: "allowed tables with empty string",
-			config: &Config{
-				AllowedTables:    []string{"posts", ""},
-				MaxContentLength: 10240,
+			name: "allowed types with empty string",
+			config: Config{
+				AllowedTypes:     []string{"posts", ""},
+				SupportedLocales: []string{"en"},
+				DefaultLocale:    "en",
 			},
 			wantErr: true,
-			errMsg:  "allowed_tables cannot contain empty strings",
+			errMsg:  "allowed_types cannot contain empty strings",
 		},
 		{
-			name: "duplicate table names",
-			config: &Config{
-				AllowedTables:    []string{"posts", "articles", "posts"},
-				MaxContentLength: 10240,
+			name: "duplicate type names",
+			config: Config{
+				AllowedTypes:     []string{"posts", "articles", "posts"},
+				SupportedLocales: []string{"en"},
+				DefaultLocale:    "en",
 			},
 			wantErr: true,
-			errMsg:  "duplicate table name in allowed_tables: posts",
+			errMsg:  "duplicate type in allowed_types: posts",
 		},
 		{
-			name: "zero max content length sets default",
-			config: &Config{
-				AllowedTables:    []string{"posts"},
-				MaxContentLength: 0,
-			},
-			wantErr: false,
-		},
-		{
-			name: "max content length too small",
-			config: &Config{
-				AllowedTables:    []string{"posts"},
-				MaxContentLength: 0,
-			},
-			wantErr: false, // 0 sets default
-		},
-		{
-			name: "max content length too large",
-			config: &Config{
-				AllowedTables:    []string{"posts"},
-				MaxContentLength: 2000000, // 2MB, over 1MB limit
+			name: "empty supported locales",
+			config: Config{
+				AllowedTypes:     []string{"posts"},
+				SupportedLocales: []string{},
+				DefaultLocale:    "en",
 			},
 			wantErr: true,
-			errMsg:  "max_content_length must be between 1 and 1048576 bytes",
+			errMsg:  "supported_locales cannot be empty",
+		},
+		{
+			name: "empty default locale",
+			config: Config{
+				AllowedTypes:     []string{"posts"},
+				SupportedLocales: []string{"en"},
+				DefaultLocale:    "",
+			},
+			wantErr: true,
+			errMsg:  "default_locale cannot be empty",
+		},
+		{
+			name: "default locale not in supported",
+			config: Config{
+				AllowedTypes:     []string{"posts"},
+				SupportedLocales: []string{"en", "fr"},
+				DefaultLocale:    "es",
+			},
+			wantErr: true,
+			errMsg:  "default_locale must be one of the supported_locales",
 		},
 	}
 
@@ -88,56 +100,93 @@ func TestConfig_Validate(t *testing.T) {
 				if err != nil {
 					t.Errorf("Validate() unexpected error = %v", err)
 				}
-				// Check default was set
-				if tt.config.MaxContentLength == 0 {
-					t.Errorf("MaxContentLength should be set to default 10240, got %d", tt.config.MaxContentLength)
-				}
 			}
 		})
 	}
 }
 
-func TestConfig_IsAllowedTable(t *testing.T) {
-	config := &Config{
-		AllowedTables: []string{"posts", "articles", "products"},
+func TestConfig_IsAllowedType(t *testing.T) {
+	config := Config{
+		AllowedTypes: []string{"posts", "articles", "products"},
 	}
 
 	tests := []struct {
-		name      string
-		tableName string
-		want      bool
+		name     string
+		typeName string
+		want     bool
 	}{
 		{
-			name:      "allowed table - posts",
-			tableName: "posts",
-			want:      true,
+			name:     "allowed type - posts",
+			typeName: "posts",
+			want:     true,
 		},
 		{
-			name:      "allowed table - articles",
-			tableName: "articles",
-			want:      true,
+			name:     "allowed type - articles",
+			typeName: "articles",
+			want:     true,
 		},
 		{
-			name:      "not allowed table",
-			tableName: "categories",
-			want:      false,
+			name:     "not allowed type",
+			typeName: "categories",
+			want:     false,
 		},
 		{
-			name:      "empty string",
-			tableName: "",
-			want:      false,
+			name:     "empty string",
+			typeName: "",
+			want:     false,
 		},
 		{
-			name:      "case sensitive - Posts",
-			tableName: "Posts",
-			want:      false,
+			name:     "case sensitive - Posts",
+			typeName: "Posts",
+			want:     false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := config.IsAllowedTable(tt.tableName); got != tt.want {
-				t.Errorf("IsAllowedTable() = %v, want %v", got, tt.want)
+			if got := config.IsAllowedType(tt.typeName); got != tt.want {
+				t.Errorf("IsAllowedType() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestConfig_IsSupportedLocale(t *testing.T) {
+	config := Config{
+		SupportedLocales: []string{"en", "fr", "es"},
+	}
+
+	tests := []struct {
+		name   string
+		locale string
+		want   bool
+	}{
+		{
+			name:   "supported locale - en",
+			locale: "en",
+			want:   true,
+		},
+		{
+			name:   "supported locale - fr",
+			locale: "fr",
+			want:   true,
+		},
+		{
+			name:   "not supported locale",
+			locale: "de",
+			want:   false,
+		},
+		{
+			name:   "empty string",
+			locale: "",
+			want:   false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := config.IsSupportedLocale(tt.locale); got != tt.want {
+				t.Errorf("IsSupportedLocale() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -146,12 +195,24 @@ func TestConfig_IsAllowedTable(t *testing.T) {
 func TestDefaultConfig(t *testing.T) {
 	config := DefaultConfig()
 
-	if config == nil {
-		t.Fatal("DefaultConfig() returned nil")
+	if len(config.AllowedTypes) == 0 {
+		t.Error("DefaultConfig() should have at least one allowed type")
 	}
 
-	if len(config.AllowedTables) == 0 {
-		t.Error("DefaultConfig() should have at least one allowed table")
+	if len(config.SupportedLocales) == 0 {
+		t.Error("DefaultConfig() should have at least one supported locale")
+	}
+
+	if config.DefaultLocale == "" {
+		t.Error("DefaultConfig() should have a default locale")
+	}
+
+	if config.PaginationLimit != 20 {
+		t.Errorf("DefaultConfig() PaginationLimit = %d, want 20", config.PaginationLimit)
+	}
+
+	if config.MaxPaginationLimit != 100 {
+		t.Errorf("DefaultConfig() MaxPaginationLimit = %d, want 100", config.MaxPaginationLimit)
 	}
 
 	if config.MaxContentLength != 10240 {

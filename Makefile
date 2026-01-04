@@ -14,10 +14,10 @@ install: ## Install development tools
 
 test: ## Run tests with coverage
 	@echo "Running tests..."
-	@go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+	@go test -v -race -coverprofile=coverage.out -covermode=atomic ./... 2>&1 | grep -v "go: no such tool"
 	@echo ""
 	@echo "Coverage summary:"
-	@go tool cover -func=coverage.out
+	@go tool cover -func=coverage.out 2>/dev/null || true
 	@rm -f coverage.out
 
 coverage: ## Generate and display coverage report

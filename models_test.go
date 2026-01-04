@@ -9,7 +9,9 @@ import (
 
 func TestCreateTranslatableRequest_Validate(t *testing.T) {
 	config := &Config{
-		AllowedTables:    []string{"posts", "articles"},
+		AllowedTypes:     []string{"posts", "articles"},
+		SupportedLocales: []string{"en", "fr"},
+		DefaultLocale:    "en",
 		MaxContentLength: 100,
 	}
 
@@ -26,6 +28,7 @@ func TestCreateTranslatableRequest_Validate(t *testing.T) {
 			req: &CreateTranslatableRequest{
 				TranslatableID: validUUID,
 				Translatable:   "posts",
+				Locale:         "en",
 				Content:        "Valid content",
 			},
 			wantErr: false,
@@ -35,6 +38,7 @@ func TestCreateTranslatableRequest_Validate(t *testing.T) {
 			req: &CreateTranslatableRequest{
 				TranslatableID: "not-a-uuid",
 				Translatable:   "posts",
+				Locale:         "en",
 				Content:        "Content",
 			},
 			wantErr: true,
@@ -45,16 +49,29 @@ func TestCreateTranslatableRequest_Validate(t *testing.T) {
 			req: &CreateTranslatableRequest{
 				TranslatableID: validUUID,
 				Translatable:   "categories",
+				Locale:         "en",
 				Content:        "Content",
 			},
 			wantErr: true,
 			errMsg:  "translatable type is not allowed",
 		},
 		{
+			name: "locale not supported",
+			req: &CreateTranslatableRequest{
+				TranslatableID: validUUID,
+				Translatable:   "posts",
+				Locale:         "de",
+				Content:        "Content",
+			},
+			wantErr: true,
+			errMsg:  "locale is not supported",
+		},
+		{
 			name: "empty content",
 			req: &CreateTranslatableRequest{
 				TranslatableID: validUUID,
 				Translatable:   "posts",
+				Locale:         "en",
 				Content:        "   ",
 			},
 			wantErr: true,
@@ -65,6 +82,7 @@ func TestCreateTranslatableRequest_Validate(t *testing.T) {
 			req: &CreateTranslatableRequest{
 				TranslatableID: validUUID,
 				Translatable:   "posts",
+				Locale:         "en",
 				Content:        strings.Repeat("a", 101),
 			},
 			wantErr: true,
@@ -75,6 +93,7 @@ func TestCreateTranslatableRequest_Validate(t *testing.T) {
 			req: &CreateTranslatableRequest{
 				TranslatableID: validUUID,
 				Translatable:   "posts",
+				Locale:         "en",
 				Content:        "<script>alert('xss')</script>",
 			},
 			wantErr: false,
@@ -96,7 +115,6 @@ func TestCreateTranslatableRequest_Validate(t *testing.T) {
 				if err != nil {
 					t.Errorf("Validate() unexpected error = %v", err)
 				}
-				// Check XSS escaping
 				if strings.Contains(tt.req.Content, "<script>") {
 					t.Error("Content should be HTML escaped, but contains <script>")
 				}
@@ -107,7 +125,8 @@ func TestCreateTranslatableRequest_Validate(t *testing.T) {
 
 func TestUpdateTranslatableRequest_Validate(t *testing.T) {
 	config := &Config{
-		AllowedTables:    []string{"posts"},
+		AllowedTypes:     []string{"posts"},
+		SupportedLocales: []string{"en", "fr"},
 		MaxContentLength: 50,
 	}
 
@@ -120,13 +139,24 @@ func TestUpdateTranslatableRequest_Validate(t *testing.T) {
 		{
 			name: "valid update",
 			req: &UpdateTranslatableRequest{
+				Locale:  "en",
 				Content: "Updated content",
 			},
 			wantErr: false,
 		},
 		{
+			name: "locale not supported",
+			req: &UpdateTranslatableRequest{
+				Locale:  "de",
+				Content: "Content",
+			},
+			wantErr: true,
+			errMsg:  "locale is not supported",
+		},
+		{
 			name: "empty content",
 			req: &UpdateTranslatableRequest{
+				Locale:  "en",
 				Content: "  ",
 			},
 			wantErr: true,
@@ -135,6 +165,7 @@ func TestUpdateTranslatableRequest_Validate(t *testing.T) {
 		{
 			name: "content too long",
 			req: &UpdateTranslatableRequest{
+				Locale:  "en",
 				Content: strings.Repeat("a", 51),
 			},
 			wantErr: true,
@@ -169,6 +200,7 @@ func TestCreateTranslatableRequest_ToTranslatable(t *testing.T) {
 	req := &CreateTranslatableRequest{
 		TranslatableID: validUUID,
 		Translatable:   "posts",
+		Locale:         "en",
 		Content:        "Test content",
 	}
 
@@ -198,6 +230,10 @@ func TestCreateTranslatableRequest_ToTranslatable(t *testing.T) {
 		t.Errorf("ToTranslatable() Translatable = %v, want posts", translatable.Translatable)
 	}
 
+	if translatable.Locale != "en" {
+		t.Errorf("ToTranslatable() Locale = %v, want en", translatable.Locale)
+	}
+
 	if translatable.Content != "Test content" {
 		t.Errorf("ToTranslatable() Content = %v, want 'Test content'", translatable.Content)
 	}
@@ -208,6 +244,16 @@ func TestCreateTranslatableRequest_ToTranslatable(t *testing.T) {
 }
 
 func TestQueryParams_Validate(t *testing.T) {
+	config := &Config{
+		AllowedTypes:       []string{"posts"},
+		SupportedLocales:   []string{"en", "fr"},
+		PaginationLimit:    20,
+		MaxPaginationLimit: 100,
+	}
+
+	locale := "en"
+	invalidLocale := "de"
+
 	tests := []struct {
 		name    string
 		params  *QueryParams
@@ -227,16 +273,9 @@ func TestQueryParams_Validate(t *testing.T) {
 			params: &QueryParams{
 				Limit:  50,
 				Offset: 10,
+				Locale: &locale,
 			},
 			wantErr: false,
-		},
-		{
-			name: "limit too small",
-			params: &QueryParams{
-				Limit:  0,
-				Offset: 0,
-			},
-			wantErr: false, // 0 sets default
 		},
 		{
 			name: "limit too large",
@@ -245,7 +284,7 @@ func TestQueryParams_Validate(t *testing.T) {
 				Offset: 0,
 			},
 			wantErr: true,
-			errMsg:  "limit must be between 1 and 100",
+			errMsg:  "limit out of range",
 		},
 		{
 			name: "negative offset",
@@ -256,11 +295,21 @@ func TestQueryParams_Validate(t *testing.T) {
 			wantErr: true,
 			errMsg:  "offset must be non-negative",
 		},
+		{
+			name: "unsupported locale",
+			params: &QueryParams{
+				Limit:  20,
+				Offset: 0,
+				Locale: &invalidLocale,
+			},
+			wantErr: true,
+			errMsg:  "locale is not supported",
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.params.Validate()
+			err := tt.params.Validate(config)
 			if tt.wantErr {
 				if err == nil {
 					t.Errorf("Validate() expected error but got nil")
@@ -273,9 +322,8 @@ func TestQueryParams_Validate(t *testing.T) {
 				if err != nil {
 					t.Errorf("Validate() unexpected error = %v", err)
 				}
-				// Check default limit was set
 				if tt.params.Limit == 0 {
-					t.Error("Validate() should set default limit of 20")
+					t.Error("Validate() should set default limit")
 				}
 			}
 		})
