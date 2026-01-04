@@ -10,9 +10,8 @@ A production-ready plugin for GoREST framework that provides multi-language cont
 ## Features
 
 - **CRUD Operations**: Create, Read, Update, Delete translatable content
-- **Multi-Resource Support**: Attach translatable content to any resource type (posts, articles, products, etc.)
+- **Multi-Resource Support**: Attach translatable content to any resource
 - **Security**: Built-in XSS protection, ownership validation, and configurable content limits
-- **GoREST Integration**: Uses existing middleware for authentication, logging, and validation
 - **Flexible Querying**: Filter by resource ID, type, or user
 
 ## Installation
