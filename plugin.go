@@ -90,6 +90,10 @@ func (p *TranslatablePlugin) MigrationSource() interface{} {
 	return migrations.GetMigrations()
 }
 
+func (p *TranslatablePlugin) Dependencies() []string {
+	return []string{"auth"}
+}
+
 func (p *TranslatablePlugin) MigrationDependencies() []string {
 	return []string{"auth"}
 }
