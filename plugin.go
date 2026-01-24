@@ -97,3 +97,16 @@ func (p *TranslatablePlugin) Dependencies() []string {
 func (p *TranslatablePlugin) MigrationDependencies() []string {
 	return []string{"auth"}
 }
+
+func (p *TranslatablePlugin) GetOpenAPIResources() []plugin.OpenAPIResource {
+	return []plugin.OpenAPIResource{{
+		Name:          "translation",
+		PluralName:    "translations",
+		BasePath:      "/translations",
+		Tags:          []string{"Translations"},
+		ResponseModel: Translatable{},
+		CreateModel:   CreateTranslatableRequest{},
+		UpdateModel:   UpdateTranslatableRequest{},
+		Description:   "Multi-language content translations",
+	}}
+}
