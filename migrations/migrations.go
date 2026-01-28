@@ -21,7 +21,7 @@ func GetMigrations() migrations.MigrationSource {
 					translatable_id UUID NOT NULL,
 					translatable TEXT NOT NULL,
 					locale TEXT NOT NULL DEFAULT 'en',
-					content TEXT NOT NULL,
+					content JSONB NOT NULL,
 					updated_at TIMESTAMP(0) WITH TIME ZONE,
 					created_at TIMESTAMP(0) WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 					UNIQUE(translatable_id, translatable, locale)
@@ -32,7 +32,7 @@ func GetMigrations() migrations.MigrationSource {
 					translatable_id CHAR(36) NOT NULL,
 					translatable VARCHAR(255) NOT NULL,
 					locale VARCHAR(10) NOT NULL DEFAULT 'en',
-					content TEXT NOT NULL,
+					content JSON NOT NULL,
 					updated_at TIMESTAMP NULL,
 					created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 					FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
