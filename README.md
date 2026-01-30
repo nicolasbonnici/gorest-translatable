@@ -336,6 +336,42 @@ go test -cover ./...
 - ✅ Enable HTTPS in production
 - ✅ Regular database backups
 
+---
+
+## Git Hooks
+
+This directory contains git hooks for the GoREST plugin to maintain code quality.
+
+### Available Hooks
+
+#### pre-commit
+
+Runs before each commit to ensure code quality:
+- **Linting**: Runs `make lint` to check code style and potential issues
+- **Tests**: Runs `make test` to verify all tests pass
+
+### Installation
+
+#### Automatic Installation
+
+Run the install script from the project root:
+
+```bash
+./.githooks/install.sh
+```
+
+#### Manual Installation
+
+Copy the hooks to your `.git/hooks` directory:
+
+```bash
+cp .githooks/pre-commit .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
+```
+
+---
+
+
 ## License
 
 MIT License
