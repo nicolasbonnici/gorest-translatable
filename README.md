@@ -5,7 +5,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/nicolasbonnici/gorest-translatable)](https://goreportcard.com/report/github.com/nicolasbonnici/gorest-translatable)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-A production-ready plugin for GoREST framework that provides multi-language content support through a polymorphic `translatable` table.
+A production-ready plugin for GoREST framework that provides multi-language content support through a polymorphic `translations` table.
 
 ## Features
 
@@ -22,24 +22,14 @@ go get github.com/nicolas/gorest-translatable
 
 ## Database Setup
 
-Run the migration to create the `translatable` table:
+The plugin includes migrations to create the `translations` table. The migrations will be run automatically when you initialize the plugin with GoREST's migration system.
 
-```sql
--- migrations/001_create_translatable.sql
-CREATE TABLE translatable (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES users(id),
-    translatable_id UUID NOT NULL,
-    translatable TEXT NOT NULL,
-    content TEXT NOT NULL,
-    updated_at TIMESTAMPTZ,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX idx_translatable_lookup ON translatable(translatable_id, translatable);
-CREATE INDEX idx_translatable_user ON translatable(user_id);
-CREATE INDEX idx_translatable_created ON translatable(created_at DESC);
-```
+The table structure includes:
+- Multi-database support (PostgreSQL, MySQL, SQLite)
+- Polymorphic relationship via `translatable_id` and `translatable` columns
+- Locale support for multi-language content
+- User ownership tracking
+- Automatic timestamps
 
 ## Usage
 
@@ -113,15 +103,16 @@ config := &translatable.Config{
 
 ## API Endpoints
 
-### Create Translatable
+### Create Translation
 
 ```http
-POST /api/translatable
+POST /api/translations
 Content-Type: application/json
 
 {
   "translatable_id": "550e8400-e29b-41d4-a716-446655440000",
   "translatable": "posts",
+  "locale": "en",
   "content": "This is the translatable content"
 }
 ```
@@ -139,10 +130,10 @@ Content-Type: application/json
 }
 ```
 
-### Get Translatable by ID
+### Get Translation by ID
 
 ```http
-GET /api/translatable/{id}
+GET /api/translations/{id}
 ```
 
 **Response:**
@@ -159,10 +150,10 @@ GET /api/translatable/{id}
 }
 ```
 
-### Query Translatables
+### Query Translations
 
 ```http
-GET /api/translatable?translatable_id={uuid}&translatable=posts&limit=20&offset=0
+GET /api/translations?translatable_id={uuid}&translatable=posts&locale=en&limit=20&offset=0
 ```
 
 **Query Parameters:**
@@ -191,26 +182,27 @@ GET /api/translatable?translatable_id={uuid}&translatable=posts&limit=20&offset=
 }
 ```
 
-### Update Translatable
+### Update Translation
 
 ```http
-PUT /api/translatable/{id}
+PUT /api/translations/{id}
 Content-Type: application/json
 
 {
+  "locale": "en",
   "content": "Updated content"
 }
 ```
 
-**Note:** Users can only update their own translatable entries (validated via `user_id` from auth middleware).
+**Note:** Users can only update their own translation entries (validated via `user_id` from auth middleware).
 
-### Delete Translatable
+### Delete Translation
 
 ```http
-DELETE /api/translatable/{id}
+DELETE /api/translations/{id}
 ```
 
-**Note:** Users can only delete their own translatable entries.
+**Note:** Users can only delete their own translation entries.
 
 ## Security Features
 
@@ -278,40 +270,42 @@ The plugin returns standard HTTP status codes:
 
 ## Examples
 
-### Example 1: Add Translatable Content to a Post
+### Example 1: Add Translation Content to a Post
 
 ```bash
-curl -X POST http://localhost:8080/api/translatable \
+curl -X POST http://localhost:8080/api/translations \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -d '{
     "translatable_id": "550e8400-e29b-41d4-a716-446655440000",
     "translatable": "posts",
+    "locale": "en",
     "content": "This is a comment on the post"
   }'
 ```
 
-### Example 2: Get All Translatables for a Post
+### Example 2: Get All Translations for a Post
 
 ```bash
-curl "http://localhost:8080/api/translatable?translatable_id=550e8400-e29b-41d4-a716-446655440000&translatable=posts"
+curl "http://localhost:8080/api/translations?translatable_id=550e8400-e29b-41d4-a716-446655440000&translatable=posts"
 ```
 
-### Example 3: Update a Translatable
+### Example 3: Update a Translation
 
 ```bash
-curl -X PUT http://localhost:8080/api/translatable/650e8400-e29b-41d4-a716-446655440000 \
+curl -X PUT http://localhost:8080/api/translations/650e8400-e29b-41d4-a716-446655440000 \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -d '{
+    "locale": "en",
     "content": "Updated content"
   }'
 ```
 
-### Example 4: Delete a Translatable
+### Example 4: Delete a Translation
 
 ```bash
-curl -X DELETE http://localhost:8080/api/translatable/650e8400-e29b-41d4-a716-446655440000 \
+curl -X DELETE http://localhost:8080/api/translations/650e8400-e29b-41d4-a716-446655440000 \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 

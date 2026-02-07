@@ -241,7 +241,7 @@ func getUserIDFromFiberContext(c *fiber.Ctx) *uuid.UUID {
 
 func (r *TranslatableResource) createInDB(ctx context.Context, t *Translatable) error {
 	query := `
-		INSERT INTO translatable (id, user_id, translatable_id, translatable, locale, content, created_at)
+		INSERT INTO translations (id, user_id, translatable_id, translatable, locale, content, created_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
 	`
 
@@ -261,7 +261,7 @@ func (r *TranslatableResource) createInDB(ctx context.Context, t *Translatable) 
 func (r *TranslatableResource) getByIDFromDB(ctx context.Context, id uuid.UUID) (*Translatable, error) {
 	query := `
 		SELECT id, user_id, translatable_id, translatable, locale, content, updated_at, created_at
-		FROM translatable
+		FROM translations
 		WHERE id = $1
 	`
 
@@ -288,10 +288,10 @@ func (r *TranslatableResource) queryFromDB(ctx context.Context, params QueryPara
 	// Build query
 	query := `
 		SELECT id, user_id, translatable_id, translatable, locale, content, updated_at, created_at
-		FROM translatable
+		FROM translations
 		WHERE 1=1
 	`
-	countQuery := `SELECT COUNT(*) FROM translatable WHERE 1=1`
+	countQuery := `SELECT COUNT(*) FROM translations WHERE 1=1`
 
 	args := []interface{}{}
 	argCount := 1
@@ -371,7 +371,7 @@ func (r *TranslatableResource) queryFromDB(ctx context.Context, params QueryPara
 
 func (r *TranslatableResource) updateInDB(ctx context.Context, id uuid.UUID, content, locale string, userID *uuid.UUID) error {
 	query := `
-		UPDATE translatable
+		UPDATE translations
 		SET content = $1, locale = $2, updated_at = $3
 		WHERE id = $4
 	`
@@ -403,7 +403,7 @@ func (r *TranslatableResource) updateInDB(ctx context.Context, id uuid.UUID, con
 }
 
 func (r *TranslatableResource) deleteFromDB(ctx context.Context, id uuid.UUID, userID *uuid.UUID) error {
-	query := `DELETE FROM translatable WHERE id = $1`
+	query := `DELETE FROM translations WHERE id = $1`
 
 	args := []interface{}{id}
 	if userID != nil {
