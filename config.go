@@ -8,13 +8,13 @@ import (
 )
 
 type Config struct {
-	Database             database.Database
-	AllowedTypes         []string `json:"allowed_types" yaml:"allowed_types"`
-	SupportedLocales     []string `json:"supported_locales" yaml:"supported_locales"`
-	DefaultLocale        string   `json:"default_locale" yaml:"default_locale"`
-	PaginationLimit      int      `json:"pagination_limit" yaml:"pagination_limit"`
-	MaxPaginationLimit   int      `json:"max_pagination_limit" yaml:"max_pagination_limit"`
-	MaxContentLength     int      `json:"max_content_length" yaml:"max_content_length"`
+	Database           database.Database
+	AllowedTypes       []string `json:"allowed_types" yaml:"allowed_types"`
+	SupportedLocales   []string `json:"supported_locales" yaml:"supported_locales"`
+	DefaultLocale      string   `json:"default_locale" yaml:"default_locale"`
+	PaginationLimit    int      `json:"pagination_limit" yaml:"pagination_limit"`
+	MaxPaginationLimit int      `json:"max_pagination_limit" yaml:"max_pagination_limit"`
+	MaxContentLength   int      `json:"max_content_length" yaml:"max_content_length"`
 }
 
 func (c *Config) Validate() error {

@@ -32,12 +32,12 @@ func TestTranslatablePlugin_Initialize(t *testing.T) {
 		{
 			name: "valid config",
 			config: map[string]interface{}{
-				"allowed_types":       []interface{}{"posts", "articles"},
-				"supported_locales":   []interface{}{"en", "fr"},
-				"default_locale":      "en",
-				"pagination_limit":    20,
+				"allowed_types":        []interface{}{"posts", "articles"},
+				"supported_locales":    []interface{}{"en", "fr"},
+				"default_locale":       "en",
+				"pagination_limit":     20,
 				"max_pagination_limit": 100,
-				"max_content_length":  10240,
+				"max_content_length":   10240,
 			},
 			wantErr: false,
 		},
