@@ -13,14 +13,18 @@ import (
 )
 
 type TranslatableResource struct {
-	db     database.Database
-	config *Config
+	db      database.Database
+	config  *Config
+	service *TranslatableService
 }
 
 func RegisterTranslatableRoutes(app *fiber.App, db database.Database, config *Config) {
+	service := NewTranslatableService(db, config)
+
 	resource := &TranslatableResource{
-		db:     db,
-		config: config,
+		db:      db,
+		config:  config,
+		service: service,
 	}
 
 	app.Post("/translations", resource.Create)
@@ -28,6 +32,7 @@ func RegisterTranslatableRoutes(app *fiber.App, db database.Database, config *Co
 	app.Get("/translations", resource.Query)
 	app.Put("/translations/:id", resource.Update)
 	app.Delete("/translations/:id", resource.Delete)
+	app.Get("/locales", resource.GetLocales)
 }
 
 func (r *TranslatableResource) Create(c *fiber.Ctx) error {
@@ -145,11 +150,11 @@ func (r *TranslatableResource) Query(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{
-		"@context":          "http://www.w3.org/ns/hydra/context.jsonld",
-		"@id":               "/translations",
-		"@type":             "hydra:Collection",
-		"hydra:totalItems":  total,
-		"hydra:member":      results,
+		"@context":         "http://www.w3.org/ns/hydra/context.jsonld",
+		"@id":              "/translations",
+		"@type":            "hydra:Collection",
+		"hydra:totalItems": total,
+		"hydra:member":     results,
 	})
 }
 
@@ -221,6 +226,12 @@ func (r *TranslatableResource) Delete(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{"message": "Translation deleted successfully"})
+}
+
+// GetLocales returns all available locales with default flag
+func (r *TranslatableResource) GetLocales(c *fiber.Ctx) error {
+	locales := r.service.GetLocales()
+	return c.JSON(locales)
 }
 
 func getUserIDFromFiberContext(c *fiber.Ctx) *uuid.UUID {

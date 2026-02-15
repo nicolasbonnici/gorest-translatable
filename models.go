@@ -121,3 +121,9 @@ func (q *QueryParams) Validate(config *Config) error {
 	}
 	return nil
 }
+
+// LocaleInfo represents a locale with its default status
+type LocaleInfo struct {
+	Locale    string `json:"locale"`
+	IsDefault bool   `json:"isDefault"`
+}

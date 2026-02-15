@@ -20,6 +20,20 @@ A production-ready plugin for GoREST framework that provides multi-language cont
 go get github.com/nicolas/gorest-translatable
 ```
 
+
+## Development Environment
+
+To set up your development environment:
+
+```bash
+make install
+```
+
+This will:
+- Install Go dependencies
+- Install development tools (golangci-lint)
+- Set up git hooks (pre-commit linting and tests)
+
 ## Database Setup
 
 The plugin includes migrations to create the `translations` table. The migrations will be run automatically when you initialize the plugin with GoREST's migration system.

@@ -20,9 +20,11 @@ import (
 
 func setupTestApp(db database.Database, config *Config) (*fiber.App, *TranslatableResource) {
 	app := fiber.New()
+	service := NewTranslatableService(db, config)
 	resource := &TranslatableResource{
-		db:     db,
-		config: config,
+		db:      db,
+		config:  config,
+		service: service,
 	}
 	return app, resource
 }
@@ -789,6 +791,106 @@ func TestGetUserIDFromFiberContext(t *testing.T) {
 			req := httptest.NewRequest("GET", "/test", nil)
 			_, err := app.Test(req)
 			assert.NoError(t, err)
+		})
+	}
+}
+
+func TestTranslatableResource_GetLocales(t *testing.T) {
+	tests := []struct {
+		name           string
+		config         *Config
+		expectedStatus int
+		checkResponse  func(t *testing.T, body []byte)
+	}{
+		{
+			name: "success - multiple locales",
+			config: &Config{
+				SupportedLocales: []string{"en", "fr", "es"},
+				DefaultLocale:    "en",
+			},
+			expectedStatus: 200,
+			checkResponse: func(t *testing.T, body []byte) {
+				var locales []LocaleInfo
+				err := json.Unmarshal(body, &locales)
+				assert.NoError(t, err)
+				assert.Len(t, locales, 3)
+
+				// Create a map for easy lookup
+				localeMap := make(map[string]LocaleInfo)
+				for _, locale := range locales {
+					localeMap[locale.Locale] = locale
+				}
+
+				// Verify English is default
+				en, found := localeMap["en"]
+				assert.True(t, found)
+				assert.True(t, en.IsDefault)
+
+				// Verify French is not default
+				fr, found := localeMap["fr"]
+				assert.True(t, found)
+				assert.False(t, fr.IsDefault)
+
+				// Verify Spanish is not default
+				es, found := localeMap["es"]
+				assert.True(t, found)
+				assert.False(t, es.IsDefault)
+			},
+		},
+		{
+			name: "success - single locale",
+			config: &Config{
+				SupportedLocales: []string{"en"},
+				DefaultLocale:    "en",
+			},
+			expectedStatus: 200,
+			checkResponse: func(t *testing.T, body []byte) {
+				var locales []LocaleInfo
+				err := json.Unmarshal(body, &locales)
+				assert.NoError(t, err)
+				assert.Len(t, locales, 1)
+				assert.Equal(t, "en", locales[0].Locale)
+				assert.True(t, locales[0].IsDefault)
+			},
+		},
+		{
+			name: "success - different default locale",
+			config: &Config{
+				SupportedLocales: []string{"en", "fr", "de"},
+				DefaultLocale:    "fr",
+			},
+			expectedStatus: 200,
+			checkResponse: func(t *testing.T, body []byte) {
+				var locales []LocaleInfo
+				err := json.Unmarshal(body, &locales)
+				assert.NoError(t, err)
+				assert.Len(t, locales, 3)
+
+				// Verify only French is default
+				defaultCount := 0
+				for _, locale := range locales {
+					if locale.IsDefault {
+						defaultCount++
+						assert.Equal(t, "fr", locale.Locale)
+					}
+				}
+				assert.Equal(t, 1, defaultCount)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			app, resource := setupTestApp(nil, tt.config)
+			app.Get("/locales", resource.GetLocales)
+
+			req := httptest.NewRequest("GET", "/locales", nil)
+			resp, err := app.Test(req)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expectedStatus, resp.StatusCode)
+
+			body, _ := io.ReadAll(resp.Body)
+			tt.checkResponse(t, body)
 		})
 	}
 }
