@@ -80,10 +80,10 @@ func TestTranslatableResource_Create(t *testing.T) {
 		{
 			name: "error - invalid translatable_id",
 			body: map[string]interface{}{
-				"translatableId":"not-a-uuid",
-				"translatable":    "products",
-				"locale":          "en",
-				"content":         "Test content",
+				"translatableId": "not-a-uuid",
+				"translatable":   "products",
+				"locale":         "en",
+				"content":        "Test content",
 			},
 			expectedStatus: 400,
 			checkResponse: func(t *testing.T, body []byte) {
@@ -96,10 +96,10 @@ func TestTranslatableResource_Create(t *testing.T) {
 		{
 			name: "error - invalid translatable type",
 			body: map[string]interface{}{
-				"translatableId":uuid.New().String(),
-				"translatable":    "invalid_type",
-				"locale":          "en",
-				"content":         "Test content",
+				"translatableId": uuid.New().String(),
+				"translatable":   "invalid_type",
+				"locale":         "en",
+				"content":        "Test content",
 			},
 			expectedStatus: 400,
 			checkResponse: func(t *testing.T, body []byte) {
@@ -112,10 +112,10 @@ func TestTranslatableResource_Create(t *testing.T) {
 		{
 			name: "error - unsupported locale",
 			body: map[string]interface{}{
-				"translatableId":uuid.New().String(),
-				"translatable":    "products",
-				"locale":          "de",
-				"content":         "Test content",
+				"translatableId": uuid.New().String(),
+				"translatable":   "products",
+				"locale":         "de",
+				"content":        "Test content",
 			},
 			expectedStatus: 400,
 			checkResponse: func(t *testing.T, body []byte) {
@@ -128,10 +128,10 @@ func TestTranslatableResource_Create(t *testing.T) {
 		{
 			name: "error - database error",
 			body: map[string]interface{}{
-				"translatableId":uuid.New().String(),
-				"translatable":    "products",
-				"locale":          "en",
-				"content":         "Test content",
+				"translatableId": uuid.New().String(),
+				"translatable":   "products",
+				"locale":         "en",
+				"content":        "Test content",
 			},
 			mockExecFunc: func(ctx context.Context, query string, args ...interface{}) (database.Result, error) {
 				return nil, errors.New("database error")
@@ -190,11 +190,11 @@ func TestTranslatableResource_GetByID(t *testing.T) {
 	validID := uuid.New()
 
 	tests := []struct {
-		name            string
-		id              string
+		name             string
+		id               string
 		mockQueryRowFunc func(ctx context.Context, query string, args ...interface{}) database.Row
-		expectedStatus  int
-		checkResponse   func(t *testing.T, body []byte)
+		expectedStatus   int
+		checkResponse    func(t *testing.T, body []byte)
 	}{
 		{
 			name: "success - translation found",

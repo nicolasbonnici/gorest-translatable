@@ -8,11 +8,11 @@ import (
 
 func TestTranslatableService_GetLocales(t *testing.T) {
 	tests := []struct {
-		name             string
-		config           *Config
-		expectedCount    int
-		expectedDefault  string
-		expectedLocales  []string
+		name            string
+		config          *Config
+		expectedCount   int
+		expectedDefault string
+		expectedLocales []string
 	}{
 		{
 			name: "success - multiple locales",
