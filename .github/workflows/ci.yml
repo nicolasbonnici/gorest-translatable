@@ -51,7 +51,7 @@ jobs:
       - name: Run errcheck
         run: errcheck ./...
 
-      - name: Run gocyclo (threshold: 15)
+      - name: "Run gocyclo (threshold: 15)"
         run: |
           output=$(gocyclo -over 15 .)
           if [ -n "$output" ]; then
