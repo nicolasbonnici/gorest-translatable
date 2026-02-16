@@ -18,11 +18,32 @@ type Config struct {
 }
 
 func (c *Config) Validate() error {
+	if err := c.validateAllowedTypes(); err != nil {
+		return err
+	}
+
+	if err := c.validateSupportedLocales(); err != nil {
+		return err
+	}
+
+	if err := c.validateDefaultLocale(); err != nil {
+		return err
+	}
+
+	c.applyDefaults()
+
+	if c.MaxContentLength < 1 || c.MaxContentLength > 1048576 {
+		return errors.New("max_content_length must be between 1 and 1048576 bytes")
+	}
+
+	return nil
+}
+
+func (c *Config) validateAllowedTypes() error {
 	if len(c.AllowedTypes) == 0 {
 		return errors.New("allowed_types cannot be empty")
 	}
 
-	// Check for duplicates in allowed types
 	seen := make(map[string]bool)
 	for _, t := range c.AllowedTypes {
 		if t == "" {
@@ -34,12 +55,15 @@ func (c *Config) Validate() error {
 		seen[t] = true
 	}
 
+	return nil
+}
+
+func (c *Config) validateSupportedLocales() error {
 	if len(c.SupportedLocales) == 0 {
 		return errors.New("supported_locales cannot be empty")
 	}
 
-	// Check for duplicates in locales
-	seen = make(map[string]bool)
+	seen := make(map[string]bool)
 	for _, locale := range c.SupportedLocales {
 		if locale == "" {
 			return errors.New("supported_locales cannot contain empty strings")
@@ -50,22 +74,24 @@ func (c *Config) Validate() error {
 		seen[locale] = true
 	}
 
+	return nil
+}
+
+func (c *Config) validateDefaultLocale() error {
 	if c.DefaultLocale == "" {
 		return errors.New("default_locale cannot be empty")
 	}
 
-	// Check that default locale is in supported locales
-	found := false
 	for _, locale := range c.SupportedLocales {
 		if locale == c.DefaultLocale {
-			found = true
-			break
+			return nil
 		}
 	}
-	if !found {
-		return errors.New("default_locale must be one of the supported_locales")
-	}
 
+	return errors.New("default_locale must be one of the supported_locales")
+}
+
+func (c *Config) applyDefaults() {
 	if c.PaginationLimit <= 0 {
 		c.PaginationLimit = 20
 	}
@@ -77,12 +103,6 @@ func (c *Config) Validate() error {
 	if c.MaxContentLength <= 0 {
 		c.MaxContentLength = 10240
 	}
-
-	if c.MaxContentLength < 1 || c.MaxContentLength > 1048576 {
-		return errors.New("max_content_length must be between 1 and 1048576 bytes")
-	}
-
-	return nil
 }
 
 func (c *Config) IsAllowedType(typeName string) bool {
