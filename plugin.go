@@ -104,9 +104,9 @@ func (p *TranslatablePlugin) GetOpenAPIResources() []plugin.OpenAPIResource {
 		PluralName:    "translations",
 		BasePath:      "/translations",
 		Tags:          []string{"Translations"},
-		ResponseModel: Translatable{},
-		CreateModel:   CreateTranslatableRequest{},
-		UpdateModel:   UpdateTranslatableRequest{},
+		ResponseModel: TranslatableResponseDTO{},
+		CreateModel:   TranslatableCreateDTO{},
+		UpdateModel:   TranslatableUpdateDTO{},
 		Description:   "Multi-language content translations",
 	}}
 }
