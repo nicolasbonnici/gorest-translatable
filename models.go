@@ -18,7 +18,7 @@ type Translatable struct {
 }
 
 func (Translatable) TableName() string {
-	return "translatable"
+	return "translations"
 }
 
 type LocaleInfo struct {

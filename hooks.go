@@ -126,7 +126,7 @@ func (h *TranslatableHooks) getTranslatable(ctx context.Context, id any) (*Trans
 		return nil, err
 	}
 
-	sql := "SELECT * FROM translatable WHERE id = " + h.db.Dialect().Placeholder(1)
+	sql := "SELECT * FROM translations WHERE id = " + h.db.Dialect().Placeholder(1)
 	err = h.db.QueryRow(ctx, sql, idUUID).Scan(
 		&t.ID,
 		&t.UserID,
