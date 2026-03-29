@@ -6,7 +6,7 @@ import (
 
 func TestTranslatableTableName(t *testing.T) {
 	var translatable Translatable
-	if translatable.TableName() != "translatable" {
-		t.Errorf("TableName() = %v, want 'translatable'", translatable.TableName())
+	if translatable.TableName() != "translations" {
+		t.Errorf("TableName() = %v, want 'translations'", translatable.TableName())
 	}
 }
