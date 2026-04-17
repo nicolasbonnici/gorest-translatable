@@ -77,12 +77,12 @@ func (p *TranslatablePlugin) Handler() fiber.Handler {
 	}
 }
 
-func (p *TranslatablePlugin) SetupEndpoints(app *fiber.App) error {
+func (p *TranslatablePlugin) SetupEndpoints(router fiber.Router) error {
 	if p.db == nil {
 		return nil
 	}
 
-	RegisterRoutes(app, p.db, &p.config)
+	RegisterRoutes(router, p.db, &p.config)
 	return nil
 }
 

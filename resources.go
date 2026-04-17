@@ -12,7 +12,7 @@ type TranslatableResource struct {
 	service   *TranslatableService
 }
 
-func RegisterTranslatableRoutes(app *fiber.App, db database.Database, config *Config) {
+func RegisterTranslatableRoutes(router fiber.Router, db database.Database, config *Config) {
 	service := NewTranslatableService(db, config)
 
 	translatableCRUD := crud.New[Translatable](db)
@@ -50,12 +50,12 @@ func RegisterTranslatableRoutes(app *fiber.App, db database.Database, config *Co
 		service:   service,
 	}
 
-	app.Post("/translations", resource.Create)
-	app.Get("/translations/:id", resource.GetByID)
-	app.Get("/translations", resource.GetAll)
-	app.Put("/translations/:id", resource.Update)
-	app.Delete("/translations/:id", resource.Delete)
-	app.Get("/locales", resource.GetLocales)
+	router.Post("/translations", resource.Create)
+	router.Get("/translations/:id", resource.GetByID)
+	router.Get("/translations", resource.GetAll)
+	router.Put("/translations/:id", resource.Update)
+	router.Delete("/translations/:id", resource.Delete)
+	router.Get("/locales", resource.GetLocales)
 }
 
 func (r *TranslatableResource) Create(c *fiber.Ctx) error {
