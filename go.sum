@@ -57,8 +57,8 @@ github.com/ncruces/go-strftime v1.0.0 h1:HMFp8mLCTPp341M/ZnA4qaf7ZlsbTc+miZjCLOF
 github.com/ncruces/go-strftime v1.0.0/go.mod h1:Fwc5htZGVVkseilnfgOVb9mKy6w1naJmn9CehxcKcls=
 github.com/nicolasbonnici/gorest v0.5.0 h1:HaoGCEDhI74NAiqxt+vYfyHTTR6oQNcuMGrzqn3kDD4=
 github.com/nicolasbonnici/gorest v0.5.0/go.mod h1:tBZLDe6FUwpkUK0R70cNKJYqtOapupH7mDciwGLlYLg=
-github.com/nicolasbonnici/gorest-auth v0.1.18 h1:iwNPJaJfci8mMVykKtrEx2j/t9Jlw4BRqq+FOfg62dc=
-github.com/nicolasbonnici/gorest-auth v0.1.18/go.mod h1:m8BuFk4UPe6XccU1qD5hYk9YljvemkPsWU6B7XraJAk=
+github.com/nicolasbonnici/gorest-auth v0.1.19 h1:DCcs+TruF5W/1uELeH9BPYbMNdwaNkTU3Fq492PAVkk=
+github.com/nicolasbonnici/gorest-auth v0.1.19/go.mod h1:QSHH8Mxg0aNq5cZABL9Gh4gUxYuQ5WMaI1i5wGSYd8k=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec h1:W09IVJc94icq4NjY3clb7Lk8O1qJ8BdBEF8z0ibU0rE=
