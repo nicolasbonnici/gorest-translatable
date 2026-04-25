@@ -91,11 +91,11 @@ func (p *TranslatablePlugin) MigrationSource() interface{} {
 }
 
 func (p *TranslatablePlugin) Dependencies() []string {
-	return []string{"auth"}
+	return []string{}
 }
 
 func (p *TranslatablePlugin) MigrationDependencies() []string {
-	return []string{"auth"}
+	return []string{"gorest-core-auth"}
 }
 
 func (p *TranslatablePlugin) GetOpenAPIResources() []plugin.OpenAPIResource {

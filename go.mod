@@ -5,10 +5,9 @@ go 1.26
 toolchain go1.26.0
 
 require (
-	github.com/gofiber/fiber/v2 v2.52.12
+	github.com/gofiber/fiber/v2 v2.52.13
 	github.com/google/uuid v1.6.0
-	github.com/nicolasbonnici/gorest v0.5.2
-	github.com/nicolasbonnici/gorest-auth v0.1.21
+	github.com/nicolasbonnici/gorest v0.5.4
 	github.com/stretchr/testify v1.11.1
 )
 
@@ -36,3 +35,5 @@ require (
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/nicolasbonnici/gorest => /home/nicolas/Projects/go/gorest
