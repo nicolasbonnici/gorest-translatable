@@ -57,19 +57,8 @@ func TestTranslatablePlugin_MigrationDependencies(t *testing.T) {
 	plugin := &TranslatablePlugin{}
 	deps := plugin.MigrationDependencies()
 
-	if len(deps) == 0 {
-		t.Error("MigrationDependencies() should return at least one dependency")
-	}
-
-	found := false
-	for _, dep := range deps {
-		if dep == "auth" {
-			found = true
-			break
-		}
-	}
-
-	if !found {
-		t.Error("MigrationDependencies() should include 'auth'")
+	// Auth plugin is now merged into core, so no external migration dependencies needed
+	if len(deps) != 0 {
+		t.Errorf("MigrationDependencies() should return empty slice, got %v", deps)
 	}
 }

@@ -95,7 +95,7 @@ func (p *TranslatablePlugin) Dependencies() []string {
 }
 
 func (p *TranslatablePlugin) MigrationDependencies() []string {
-	return []string{"gorest-core-auth"}
+	return []string{}
 }
 
 func (p *TranslatablePlugin) GetOpenAPIResources() []plugin.OpenAPIResource {
