@@ -23,5 +23,10 @@ func (Translatable) TableName() string {
 
 type LocaleInfo struct {
 	Locale    string `json:"locale"`
-	IsDefault bool   `json:"isDefault"`
+	IsDefault bool   `json:"is_default"`
+}
+
+type LocalesResponse struct {
+	Default string       `json:"default"`
+	Locales []LocaleInfo `json:"locales"`
 }

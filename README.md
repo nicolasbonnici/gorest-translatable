@@ -13,6 +13,44 @@ A production-ready plugin for GoREST framework that provides multi-language cont
 - **Multi-Resource Support**: Attach translatable content to any resource
 - **Security**: Built-in XSS protection, ownership validation, and configurable content limits
 - **Flexible Querying**: Filter by resource ID, type, or user
+- **Locale API**: `GET /locales` endpoint returns all configured locales with default flag
+- **LocaleProvider**: `TranslatableService` implements the `LocaleProvider` interface used by `gorest-ai` for automatic translation
+
+## Locale API
+
+### GET `/locales`
+
+Returns the configured locales. Used by `gorest-ai` to determine source and target locales for automatic translation.
+
+```json
+{
+  "default": "en",
+  "locales": [
+    {"locale": "en", "is_default": true},
+    {"locale": "fr", "is_default": false},
+    {"locale": "es", "is_default": false}
+  ]
+}
+```
+
+### LocaleProvider integration
+
+`TranslatablePlugin.GetService()` returns a `*TranslatableService` that implements the `ai.LocaleProvider` interface:
+
+```go
+type LocaleProvider interface {
+    DefaultLocale() string
+    TargetLocales() []string
+}
+```
+
+Wire it to `gorest-ai` in your application:
+
+```go
+if tr, ok := translatablePlug.(*translatableplugin.TranslatablePlugin); ok {
+    ai.SetLocaleProvider(tr.GetService())
+}
+```
 
 ## Installation
 

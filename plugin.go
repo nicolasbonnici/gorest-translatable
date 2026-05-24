@@ -8,8 +8,9 @@ import (
 )
 
 type TranslatablePlugin struct {
-	config Config
-	db     database.Database
+	config  Config
+	db      database.Database
+	service *TranslatableService
 }
 
 func NewPlugin() plugin.Plugin {
@@ -68,7 +69,16 @@ func (p *TranslatablePlugin) Initialize(config map[string]interface{}) error {
 		p.config.MaxContentLength = maxContentLength
 	}
 
-	return p.config.Validate()
+	if err := p.config.Validate(); err != nil {
+		return err
+	}
+
+	p.service = NewTranslatableService(p.db, &p.config)
+	return nil
+}
+
+func (p *TranslatablePlugin) GetService() *TranslatableService {
+	return p.service
 }
 
 func (p *TranslatablePlugin) Handler() fiber.Handler {

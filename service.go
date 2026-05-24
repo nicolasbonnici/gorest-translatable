@@ -16,15 +16,27 @@ func NewTranslatableService(db database.Database, config *Config) *TranslatableS
 	}
 }
 
-func (s *TranslatableService) GetLocales() []LocaleInfo {
+func (s *TranslatableService) GetLocales() LocalesResponse {
 	locales := make([]LocaleInfo, 0, len(s.config.SupportedLocales))
-
 	for _, locale := range s.config.SupportedLocales {
 		locales = append(locales, LocaleInfo{
 			Locale:    locale,
 			IsDefault: locale == s.config.DefaultLocale,
 		})
 	}
+	return LocalesResponse{Default: s.config.DefaultLocale, Locales: locales}
+}
 
-	return locales
+func (s *TranslatableService) DefaultLocale() string {
+	return s.config.DefaultLocale
+}
+
+func (s *TranslatableService) TargetLocales() []string {
+	targets := make([]string, 0, len(s.config.SupportedLocales))
+	for _, locale := range s.config.SupportedLocales {
+		if locale != s.config.DefaultLocale {
+			targets = append(targets, locale)
+		}
+	}
+	return targets
 }

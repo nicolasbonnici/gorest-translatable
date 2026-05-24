@@ -79,6 +79,5 @@ func (r *TranslatableResource) Delete(c *fiber.Ctx) error {
 }
 
 func (r *TranslatableResource) GetLocales(c *fiber.Ctx) error {
-	locales := r.service.GetLocales()
-	return c.JSON(locales)
+	return c.JSON(r.service.GetLocales())
 }
