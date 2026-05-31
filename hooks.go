@@ -6,7 +6,7 @@ import (
 	"html"
 	"strings"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
 	auth "github.com/nicolasbonnici/gorest/auth"
 	"github.com/nicolasbonnici/gorest/crud"
@@ -26,7 +26,7 @@ func NewTranslatableHooks(db database.Database, config *Config) *TranslatableHoo
 	}
 }
 
-func (h *TranslatableHooks) CreateHook(c *fiber.Ctx, dto TranslatableCreateDTO, model *Translatable) error {
+func (h *TranslatableHooks) CreateHook(c fiber.Ctx, dto TranslatableCreateDTO, model *Translatable) error {
 	if _, err := uuid.Parse(dto.TranslatableID); err != nil {
 		return fiber.NewError(400, "translatable_id must be a valid UUID")
 	}
@@ -58,7 +58,7 @@ func (h *TranslatableHooks) CreateHook(c *fiber.Ctx, dto TranslatableCreateDTO, 
 	return nil
 }
 
-func (h *TranslatableHooks) UpdateHook(c *fiber.Ctx, dto TranslatableUpdateDTO, model *Translatable) error {
+func (h *TranslatableHooks) UpdateHook(c fiber.Ctx, dto TranslatableUpdateDTO, model *Translatable) error {
 	if !h.config.IsSupportedLocale(dto.Locale) {
 		return fiber.NewError(400, "locale is not supported")
 	}
@@ -90,7 +90,7 @@ func (h *TranslatableHooks) UpdateHook(c *fiber.Ctx, dto TranslatableUpdateDTO, 
 	return nil
 }
 
-func (h *TranslatableHooks) DeleteHook(c *fiber.Ctx, id any) error {
+func (h *TranslatableHooks) DeleteHook(c fiber.Ctx, id any) error {
 	ctx := auth.Context(c)
 	userID := getUserIDFromFiberContext(c)
 
@@ -106,11 +106,11 @@ func (h *TranslatableHooks) DeleteHook(c *fiber.Ctx, id any) error {
 	return nil
 }
 
-func (h *TranslatableHooks) GetByIDHook(c *fiber.Ctx, id any) error {
+func (h *TranslatableHooks) GetByIDHook(c fiber.Ctx, id any) error {
 	return nil
 }
 
-func (h *TranslatableHooks) GetAllHook(c *fiber.Ctx, conditions *[]query.Condition, orderBy *[]crud.OrderByClause) error {
+func (h *TranslatableHooks) GetAllHook(c fiber.Ctx, conditions *[]query.Condition, orderBy *[]crud.OrderByClause) error {
 	return nil
 }
 
@@ -143,7 +143,7 @@ func (h *TranslatableHooks) getTranslatable(ctx context.Context, id any) (*Trans
 	return &t, nil
 }
 
-func getUserIDFromFiberContext(c *fiber.Ctx) *uuid.UUID {
+func getUserIDFromFiberContext(c fiber.Ctx) *uuid.UUID {
 	user := auth.GetAuthenticatedUser(c)
 	if user == nil {
 		return nil

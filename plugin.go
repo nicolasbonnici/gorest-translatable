@@ -1,7 +1,7 @@
 package translatable
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/nicolasbonnici/gorest-translatable/migrations"
 	"github.com/nicolasbonnici/gorest/database"
 	"github.com/nicolasbonnici/gorest/plugin"
@@ -82,7 +82,7 @@ func (p *TranslatablePlugin) GetService() *TranslatableService {
 }
 
 func (p *TranslatablePlugin) Handler() fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		return c.Next()
 	}
 }
