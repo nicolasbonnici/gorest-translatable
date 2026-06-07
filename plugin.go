@@ -97,7 +97,7 @@ func (p *TranslatablePlugin) SetupEndpoints(router fiber.Router) error {
 		return nil
 	}
 
-	RegisterRoutes(router, p.db, &p.config, p.translator)
+	RegisterRoutes(router, p.db, &p.config, &p.translator)
 	return nil
 }
 

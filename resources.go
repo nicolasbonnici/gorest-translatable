@@ -11,10 +11,10 @@ import (
 type TranslatableResource struct {
 	processor  processor.Processor[Translatable, TranslatableCreateDTO, TranslatableUpdateDTO, TranslatableResponseDTO]
 	service    *TranslatableService
-	translator Translator
+	translator *Translator
 }
 
-func RegisterTranslatableRoutes(router fiber.Router, db database.Database, config *Config, translator Translator) {
+func RegisterTranslatableRoutes(router fiber.Router, db database.Database, config *Config, translator *Translator) {
 	service := NewTranslatableService(db, config)
 
 	translatableCRUD := crud.New[Translatable](db)
@@ -87,7 +87,7 @@ func (r *TranslatableResource) GetLocales(c fiber.Ctx) error {
 }
 
 func (r *TranslatableResource) Translate(c fiber.Ctx) error {
-	if r.translator == nil {
+	if r.translator == nil || *r.translator == nil {
 		return fiber.NewError(fiber.StatusServiceUnavailable, "auto-translation is not configured")
 	}
 
@@ -102,7 +102,7 @@ func (r *TranslatableResource) Translate(c fiber.Ctx) error {
 		}
 	}
 
-	result, err := r.translator.Translate(c.Context(), resourceType, resourceID, userID)
+	result, err := (*r.translator).Translate(c.Context(), resourceType, resourceID, userID)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}

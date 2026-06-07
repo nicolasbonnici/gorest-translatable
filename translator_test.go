@@ -23,12 +23,18 @@ func (m *mockTranslator) Translate(_ context.Context, _, _ string, _ *uuid.UUID)
 
 func newTranslateApp(t Translator) *fiber.App {
 	app := fiber.New()
-	app.Post("/translations/:type/:id/translate", (&TranslatableResource{translator: t}).Translate)
+	app.Post("/translations/:type/:id/translate", (&TranslatableResource{translator: &t}).Translate)
+	return app
+}
+
+func newTranslateAppNil() *fiber.App {
+	app := fiber.New()
+	app.Post("/translations/:type/:id/translate", (&TranslatableResource{translator: nil}).Translate)
 	return app
 }
 
 func TestTranslate_NotConfigured(t *testing.T) {
-	app := newTranslateApp(nil)
+	app := newTranslateAppNil()
 
 	req := httptest.NewRequest("POST", "/translations/post/abc/translate", nil)
 	resp, err := app.Test(req)
