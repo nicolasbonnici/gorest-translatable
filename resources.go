@@ -9,12 +9,13 @@ import (
 )
 
 type TranslatableResource struct {
-	processor  processor.Processor[Translatable, TranslatableCreateDTO, TranslatableUpdateDTO, TranslatableResponseDTO]
-	service    *TranslatableService
-	translator *Translator
+	processor      processor.Processor[Translatable, TranslatableCreateDTO, TranslatableUpdateDTO, TranslatableResponseDTO]
+	service        *TranslatableService
+	translator     *Translator
+	authMiddleware fiber.Handler
 }
 
-func RegisterTranslatableRoutes(router fiber.Router, db database.Database, config *Config, translator *Translator) {
+func RegisterTranslatableRoutes(router fiber.Router, db database.Database, config *Config, translator *Translator, authMiddleware fiber.Handler) {
 	service := NewTranslatableService(db, config)
 
 	translatableCRUD := crud.New[Translatable](db)
@@ -48,9 +49,10 @@ func RegisterTranslatableRoutes(router fiber.Router, db database.Database, confi
 		WithGetAllHook(hooks.GetAllHook)
 
 	resource := &TranslatableResource{
-		processor:  proc,
-		service:    service,
-		translator: translator,
+		processor:      proc,
+		service:        service,
+		translator:     translator,
+		authMiddleware: authMiddleware,
 	}
 
 	router.Post("/translations", resource.Create)
@@ -59,7 +61,12 @@ func RegisterTranslatableRoutes(router fiber.Router, db database.Database, confi
 	router.Put("/translations/:id", resource.Update)
 	router.Delete("/translations/:id", resource.Delete)
 	router.Get("/locales", resource.GetLocales)
-	router.Post("/translations/:type/:id/translate", resource.Translate)
+
+	if authMiddleware != nil {
+		router.Post("/translations/:type/:id/translate", authMiddleware, resource.Translate)
+	} else {
+		router.Post("/translations/:type/:id/translate", resource.Translate)
+	}
 }
 
 func (r *TranslatableResource) Create(c fiber.Ctx) error {

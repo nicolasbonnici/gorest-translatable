@@ -2,16 +2,20 @@ package translatable
 
 import (
 	"github.com/gofiber/fiber/v3"
+	gorestconfig "github.com/nicolasbonnici/gorest/config"
 	"github.com/nicolasbonnici/gorest-translatable/migrations"
+	"github.com/nicolasbonnici/gorest/auth/jwt"
+	authmiddleware "github.com/nicolasbonnici/gorest/auth/middleware"
 	"github.com/nicolasbonnici/gorest/database"
 	"github.com/nicolasbonnici/gorest/plugin"
 )
 
 type TranslatablePlugin struct {
-	config     Config
-	db         database.Database
-	service    *TranslatableService
-	translator Translator
+	config         Config
+	db             database.Database
+	service        *TranslatableService
+	translator     Translator
+	authMiddleware fiber.Handler
 }
 
 func NewPlugin() plugin.Plugin {
@@ -70,6 +74,11 @@ func (p *TranslatablePlugin) Initialize(config map[string]interface{}) error {
 		p.config.MaxContentLength = maxContentLength
 	}
 
+	if appCfg, ok := config["config"].(*gorestconfig.Config); ok && appCfg.Auth.Enabled && p.db != nil {
+		jwtSvc := jwt.NewService(appCfg.Auth.JWTSecret, appCfg.Auth.JWTTTL)
+		p.authMiddleware = authmiddleware.AuthMiddleware(jwtSvc, p.db)
+	}
+
 	if err := p.config.Validate(); err != nil {
 		return err
 	}
@@ -97,7 +106,7 @@ func (p *TranslatablePlugin) SetupEndpoints(router fiber.Router) error {
 		return nil
 	}
 
-	RegisterRoutes(router, p.db, &p.config, &p.translator)
+	RegisterRoutes(router, p.db, &p.config, &p.translator, p.authMiddleware)
 	return nil
 }
 
