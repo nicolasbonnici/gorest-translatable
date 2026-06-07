@@ -5,6 +5,6 @@ import (
 	"github.com/nicolasbonnici/gorest/database"
 )
 
-func RegisterRoutes(router fiber.Router, db database.Database, config *Config) {
-	RegisterTranslatableRoutes(router, db, config)
+func RegisterRoutes(router fiber.Router, db database.Database, config *Config, translator Translator) {
+	RegisterTranslatableRoutes(router, db, config, translator)
 }

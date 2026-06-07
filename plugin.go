@@ -8,9 +8,10 @@ import (
 )
 
 type TranslatablePlugin struct {
-	config  Config
-	db      database.Database
-	service *TranslatableService
+	config     Config
+	db         database.Database
+	service    *TranslatableService
+	translator Translator
 }
 
 func NewPlugin() plugin.Plugin {
@@ -81,6 +82,10 @@ func (p *TranslatablePlugin) GetService() *TranslatableService {
 	return p.service
 }
 
+func (p *TranslatablePlugin) SetTranslator(t Translator) {
+	p.translator = t
+}
+
 func (p *TranslatablePlugin) Handler() fiber.Handler {
 	return func(c fiber.Ctx) error {
 		return c.Next()
@@ -92,7 +97,7 @@ func (p *TranslatablePlugin) SetupEndpoints(router fiber.Router) error {
 		return nil
 	}
 
-	RegisterRoutes(router, p.db, &p.config)
+	RegisterRoutes(router, p.db, &p.config, p.translator)
 	return nil
 }
 

@@ -2,17 +2,19 @@ package translatable
 
 import (
 	"github.com/gofiber/fiber/v3"
+	"github.com/google/uuid"
 	"github.com/nicolasbonnici/gorest/crud"
 	"github.com/nicolasbonnici/gorest/database"
 	"github.com/nicolasbonnici/gorest/processor"
 )
 
 type TranslatableResource struct {
-	processor processor.Processor[Translatable, TranslatableCreateDTO, TranslatableUpdateDTO, TranslatableResponseDTO]
-	service   *TranslatableService
+	processor  processor.Processor[Translatable, TranslatableCreateDTO, TranslatableUpdateDTO, TranslatableResponseDTO]
+	service    *TranslatableService
+	translator Translator
 }
 
-func RegisterTranslatableRoutes(router fiber.Router, db database.Database, config *Config) {
+func RegisterTranslatableRoutes(router fiber.Router, db database.Database, config *Config, translator Translator) {
 	service := NewTranslatableService(db, config)
 
 	translatableCRUD := crud.New[Translatable](db)
@@ -46,8 +48,9 @@ func RegisterTranslatableRoutes(router fiber.Router, db database.Database, confi
 		WithGetAllHook(hooks.GetAllHook)
 
 	resource := &TranslatableResource{
-		processor: proc,
-		service:   service,
+		processor:  proc,
+		service:    service,
+		translator: translator,
 	}
 
 	router.Post("/translations", resource.Create)
@@ -56,6 +59,7 @@ func RegisterTranslatableRoutes(router fiber.Router, db database.Database, confi
 	router.Put("/translations/:id", resource.Update)
 	router.Delete("/translations/:id", resource.Delete)
 	router.Get("/locales", resource.GetLocales)
+	router.Post("/translations/:type/:id/translate", resource.Translate)
 }
 
 func (r *TranslatableResource) Create(c fiber.Ctx) error {
@@ -80,4 +84,28 @@ func (r *TranslatableResource) Delete(c fiber.Ctx) error {
 
 func (r *TranslatableResource) GetLocales(c fiber.Ctx) error {
 	return c.JSON(r.service.GetLocales())
+}
+
+func (r *TranslatableResource) Translate(c fiber.Ctx) error {
+	if r.translator == nil {
+		return fiber.NewError(fiber.StatusServiceUnavailable, "auto-translation is not configured")
+	}
+
+	resourceType := c.Params("type")
+	resourceID := c.Params("id")
+
+	var userID *uuid.UUID
+	if raw, ok := c.Locals("user_id").(string); ok && raw != "" {
+		parsed, err := uuid.Parse(raw)
+		if err == nil {
+			userID = &parsed
+		}
+	}
+
+	result, err := r.translator.Translate(c.Context(), resourceType, resourceID, userID)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(result)
 }
