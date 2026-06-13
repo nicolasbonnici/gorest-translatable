@@ -2,10 +2,10 @@ package translatable
 
 import (
 	"github.com/gofiber/fiber/v3"
-	gorestconfig "github.com/nicolasbonnici/gorest/config"
 	"github.com/nicolasbonnici/gorest-translatable/migrations"
 	"github.com/nicolasbonnici/gorest/auth/jwt"
 	authmiddleware "github.com/nicolasbonnici/gorest/auth/middleware"
+	gorestconfig "github.com/nicolasbonnici/gorest/config"
 	"github.com/nicolasbonnici/gorest/database"
 	"github.com/nicolasbonnici/gorest/plugin"
 )
