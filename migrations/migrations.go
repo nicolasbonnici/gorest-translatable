@@ -103,5 +103,20 @@ func GetMigrations() migrations.MigrationSource {
 		},
 	)
 
+	builder.Add(
+		"20260705000001000",
+		"add_translations_type_composite_index",
+		func(ctx context.Context, db database.Database) error {
+			// Eager-loading every locale for a set of resources filters on the type first and
+			// then a resource-id set (translatable = ? AND translatable_id IN (...)). Leading the
+			// composite index with translatable matches that access path, whereas the pre-existing
+			// idx_translations_lookup leads with translatable_id and cannot serve it efficiently.
+			return migrations.CreateIndex(ctx, db, "idx_translations_type_lookup", "translations", "translatable, translatable_id, locale")
+		},
+		func(ctx context.Context, db database.Database) error {
+			return migrations.DropIndex(ctx, db, "idx_translations_type_lookup", "translations")
+		},
+	)
+
 	return builder.Build()
 }

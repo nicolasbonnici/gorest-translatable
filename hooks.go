@@ -115,7 +115,6 @@ func (h *TranslatableHooks) GetAllHook(c fiber.Ctx, conditions *[]query.Conditio
 }
 
 func (h *TranslatableHooks) getTranslatable(ctx context.Context, id any) (*Translatable, error) {
-	var t Translatable
 	idStr, ok := id.(string)
 	if !ok {
 		return nil, errors.New("invalid ID type")
@@ -126,17 +125,17 @@ func (h *TranslatableHooks) getTranslatable(ctx context.Context, id any) (*Trans
 		return nil, err
 	}
 
-	sql := "SELECT * FROM translations WHERE id = " + h.db.Dialect().Placeholder(1)
-	err = h.db.QueryRow(ctx, sql, idUUID).Scan(
-		&t.ID,
-		&t.UserID,
-		&t.TranslatableID,
-		&t.Translatable,
-		&t.Locale,
-		&t.Content,
-		&t.UpdatedAt,
-		&t.CreatedAt,
-	)
+	sql, args, err := query.New(h.db.Dialect()).
+		Select(translationColumns...).
+		From((Translatable{}).TableName()).
+		Where(query.Eq("id", idUUID)).
+		Limit(1).
+		Build()
+	if err != nil {
+		return nil, err
+	}
+
+	t, err := scanTranslatable(h.db.QueryRow(ctx, sql, args...))
 	if err != nil {
 		return nil, err
 	}
