@@ -3,7 +3,6 @@ package translatable
 import (
 	"context"
 	"errors"
-	"html"
 	"strings"
 
 	"github.com/gofiber/fiber/v3"
@@ -48,7 +47,7 @@ func (h *TranslatableHooks) CreateHook(c fiber.Ctx, dto TranslatableCreateDTO, m
 		return fiber.NewError(400, "content exceeds maximum length")
 	}
 
-	model.Content = html.EscapeString(content)
+	model.Content = sanitizeContent(content)
 
 	userID := getUserIDFromFiberContext(c)
 	if userID != nil {
@@ -72,7 +71,7 @@ func (h *TranslatableHooks) UpdateHook(c fiber.Ctx, dto TranslatableUpdateDTO, m
 		return fiber.NewError(400, "content exceeds maximum length")
 	}
 
-	model.Content = html.EscapeString(content)
+	model.Content = sanitizeContent(content)
 
 	id := c.Params("id")
 	ctx := auth.Context(c)
