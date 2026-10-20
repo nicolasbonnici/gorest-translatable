@@ -8,7 +8,7 @@ require (
 	github.com/gofiber/fiber/v3 v3.6.1
 	github.com/google/uuid v1.6.0
 	github.com/microcosm-cc/bluemonday v1.0.27
-	github.com/nicolasbonnici/gorest v0.7.3
+	github.com/nicolasbonnici/gorest v0.7.4
 	github.com/stretchr/testify v1.12.1
 )
 
